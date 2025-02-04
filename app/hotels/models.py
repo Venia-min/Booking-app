@@ -1,0 +1,34 @@
+from sqlalchemy import JSON, Column, Integer, String, ForeignKey
+from database import Base
+
+
+class Hotels(Base):
+    """
+    Table model for hotels
+    """
+
+    __tablename__ = "hotels"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False)
+    location = Column(String, nullable=False)
+    services = Column(JSON)
+    rooms_quantity = Column(Integer, nullable=False)
+    image_id = Column(Integer)
+
+
+class Rooms(Base):
+    """
+    Table model for rooms
+    """
+
+    __tablename__ = "rooms"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    hotel_id = Column(ForeignKey("hotels.id"), nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    price = Column(Integer, nullable=False)
+    services = Column(JSON, nullable=True)
+    quantity = Column(Integer, nullable=False)
+    image_id = Column(Integer)
