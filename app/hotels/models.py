@@ -1,5 +1,5 @@
 from sqlalchemy import JSON, Column, Integer, String, ForeignKey
-from database import Base
+from app.database import Base
 
 
 class Hotels(Base):
