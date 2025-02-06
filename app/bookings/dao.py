@@ -5,7 +5,7 @@ from sqlalchemy import select, and_, or_, func, insert
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
 from app.database import async_session_maker
-from app.hotels.models import Rooms
+from app.hotels.rooms.models import Rooms
 
 
 class BookingDAO(BaseDAO):
@@ -14,8 +14,8 @@ class BookingDAO(BaseDAO):
     @classmethod
     async def add(
         cls,
-        room_id: int,
         user_id: int,
+        room_id: int,
         date_from: date,
         date_to: date,
     ):
@@ -63,6 +63,7 @@ class BookingDAO(BaseDAO):
 
             rooms_left = await session.execute(get_rooms_left)
             rooms_left: int = rooms_left.scalar()
+
             if rooms_left > 0:
                 get_price = select(Rooms.price).filter_by(id=room_id)
                 price = await session.execute(get_price)
@@ -83,3 +84,11 @@ class BookingDAO(BaseDAO):
                 return new_booking.scalar()
             else:
                 return None
+
+    # @classmethod
+    # async def find_all(cls):
+    #     pass
+    #
+    # @classmethod
+    # async def delete(cls, user_id, booking_id):
+    #     pass
