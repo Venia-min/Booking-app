@@ -17,7 +17,7 @@ class HotelDAO(BaseDAO):
     #     pass
 
     @classmethod
-    async def get_available(
+    async def get_available_by_loc_and_date(
         cls,
         location: str,
         date_from: date,
@@ -37,14 +37,9 @@ class HotelDAO(BaseDAO):
                 .cte("booked_rooms")
             )
 
-            query = (
+            hotels_query = (
                 select(
-                    Hotels.id,
-                    Hotels.name,
-                    Hotels.location,
-                    Hotels.services,
-                    Hotels.rooms_quantity,
-                    Hotels.image_id,
+                    Hotels.__table__.columns,
                     (
                         Hotels.rooms_quantity
                         - func.coalesce(booked_rooms.c.booked_count, 0)
@@ -53,7 +48,7 @@ class HotelDAO(BaseDAO):
                 .outerjoin(booked_rooms, booked_rooms.c.hotel_id == Hotels.id)
                 .where(
                     and_(
-                        Hotels.location == location,
+                        Hotels.location.ilike(f"%{location}%"),
                         (
                             Hotels.rooms_quantity
                             - func.coalesce(booked_rooms.c.booked_count, 0)
@@ -63,7 +58,8 @@ class HotelDAO(BaseDAO):
                 )
             )
 
-            result = await session.execute(query)
+            result = await session.execute(hotels_query)
+            # mappings() can ensure correct operation of redis
             hotels = result.mappings().all()
 
             return hotels
