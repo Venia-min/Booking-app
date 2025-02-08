@@ -11,8 +11,6 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
     DATABASE_URL: Optional[str] = None
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
 
     @model_validator(mode="after")
     def get_database_url(self):
@@ -21,6 +19,17 @@ class Settings(BaseSettings):
             f"{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
         return self
+
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASSWORD: str
+
+    REDIS_HOST: str
+    REDIS_PORT: int
+
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
 
     class Config:
         env_file = ".env"
