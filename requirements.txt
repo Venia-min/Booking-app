@@ -31,6 +31,7 @@ httptools==0.6.4
 httpx==0.28.1
 humanize==4.11.0
 idna==3.10
+iniconfig==2.0.0
 isort==6.0.0
 itsdangerous==2.2.0
 Jinja2==3.1.5
@@ -48,6 +49,7 @@ pathspec==0.12.1
 pendulum==3.0.0
 pillow==11.1.0
 platformdirs==4.3.6
+pluggy==1.5.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 pyasn1==0.6.1
@@ -58,6 +60,7 @@ pydantic-settings==2.7.1
 pydantic_core==2.27.2
 Pygments==2.19.1
 pylint==3.3.4
+pytest==8.3.4
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-jose==3.3.0
@@ -71,6 +74,7 @@ rsa==4.9
 shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1
+sqladmin==0.20.1
 SQLAlchemy==2.0.37
 starlette==0.45.3
 time-machine==2.16.0
@@ -86,3 +90,4 @@ vine==5.1.0
 watchfiles==1.0.4
 wcwidth==0.2.13
 websockets==14.2
+WTForms==3.1.2

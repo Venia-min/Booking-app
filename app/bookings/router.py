@@ -49,8 +49,10 @@ async def add_booking(
     if not booking:
         raise RoomCannotBeBookedException()
     booking_dict = TypeAdapter(SBooking).validate_python(booking).dict()
-    send_booking_confirmation_email.delay(booking_dict, user.email)
-    return booking_dict
+    try:
+        send_booking_confirmation_email.delay(booking_dict, user.email)
+    finally:
+        return booking_dict
 
 
 @router.delete("/{booking_id}")

@@ -3,14 +3,18 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from sqladmin import Admin
 
 from redis import asyncio as aioredis
 
+from app.admin.auth import authentication_backend
+from app.admin.views import UsersAdmin, BookingsAdmin, RoomsAdmin, HotelsAdmin
 from app.bookings.router import router as router_bookings
+from app.database import engine
 from app.users.router import router as router_users
 from app.hotels.router import router as router_hotels
 from app.hotels.rooms.router import router as router_rooms
@@ -57,23 +61,14 @@ app.add_middleware(
     ],
 )
 
+admin = Admin(app, engine, authentication_backend=authentication_backend)
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to FastAPI!"}
+admin.add_view(UsersAdmin)
+admin.add_view(RoomsAdmin)
+admin.add_view(HotelsAdmin)
+admin.add_view(BookingsAdmin)
 
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int):
-    return {"item_id": item_id}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
