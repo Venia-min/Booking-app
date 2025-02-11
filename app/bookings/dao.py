@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import select, and_, or_, func, insert
+from sqlalchemy import and_, func, insert, or_, select
 
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
@@ -56,7 +56,11 @@ class BookingDAO(BaseDAO):
             get_rooms_left = (
                 select(Rooms.quantity - func.count(booked_rooms.c.room_id))
                 .select_from(Rooms)
-                .join(booked_rooms, booked_rooms.c.room_id == Rooms.id, isouter=True)
+                .join(
+                    booked_rooms,
+                    booked_rooms.c.room_id == Rooms.id,
+                    isouter=True,
+                )
                 .where(Rooms.id == room_id)
                 .group_by(Rooms.quantity, booked_rooms.c.room_id)
             )
@@ -82,8 +86,8 @@ class BookingDAO(BaseDAO):
                 new_booking = await session.execute(add_booking)
                 await session.commit()
                 return new_booking.scalar()
-            else:
-                return None
+
+            return None
 
     # @classmethod
     # async def find_all(cls):

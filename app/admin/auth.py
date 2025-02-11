@@ -1,8 +1,8 @@
 from typing import Optional
 
-from sqladmin.authentication import AuthenticationBackend
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
+from sqladmin.authentication import AuthenticationBackend
 
 from app.users.auth import authenticate_user, create_access_token
 from app.users.dependencies import get_current_user
@@ -24,18 +24,20 @@ class AdminAuth(AuthenticationBackend):
         request.session.clear()
         return True
 
-    async def authenticate(self, request: Request) -> Optional[RedirectResponse | bool]:
+    async def authenticate(self, request: Request) -> Optional[Response | bool]:
         token = request.session.get("token")
-        print(3)
+
         if not token:
-            print(1)
-            return RedirectResponse(request.url_for("admin:login"), status_code=302)
+            return RedirectResponse(
+                request.url_for("admin:login"), status_code=302
+            )
 
         user = await get_current_user(token)
 
         if not user:
-            print(2)
-            return RedirectResponse(request.url_for("admin:login"), status_code=302)
+            return RedirectResponse(
+                request.url_for("admin:login"), status_code=302
+            )
 
         return True
 

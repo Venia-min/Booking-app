@@ -24,5 +24,4 @@ async def get_rooms(
     :param date_to:
     :return:
     """
-
     pass

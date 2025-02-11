@@ -10,7 +10,6 @@ from app.tasks.tasks import send_booking_confirmation_email
 from app.users.dependencies import get_current_user
 from app.users.models import Users
 
-
 router = APIRouter(
     prefix="/bookings",
     tags=["bookings"],
@@ -18,7 +17,9 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_bookings(user: Users = Depends(get_current_user)) -> list[SBooking]:
+async def get_bookings(
+    user: Users = Depends(get_current_user),
+) -> list[SBooking]:
     """
     Returns a list of all user bookings.
     Requires authorization: yes.

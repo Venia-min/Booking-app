@@ -1,6 +1,6 @@
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-from pydantic import model_validator, ConfigDict
+from pydantic import ConfigDict, model_validator
 from pydantic_settings import BaseSettings
 
 

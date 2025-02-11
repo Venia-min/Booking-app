@@ -23,7 +23,10 @@ class HotelsAdmin(ModelView, model=Hotels):
 
 
 class RoomsAdmin(ModelView, model=Rooms):
-    column_list = [c.name for c in Rooms.__table__.c] + [Rooms.hotel, Rooms.booking]
+    column_list = [c.name for c in Rooms.__table__.c] + [
+        Rooms.hotel,
+        Rooms.booking,
+    ]
     name = "Room"
     name_plural = "Rooms"
     icon = "fa-solid fa-room"

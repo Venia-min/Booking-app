@@ -1,4 +1,5 @@
 from email.message import EmailMessage
+
 from pydantic import EmailStr
 
 from app.config import settings
@@ -17,8 +18,8 @@ def create_booking_confirmation_template(
     email.set_content(
         f"""
             <h1>Booking confirmation<h>
-            You booked a hotel from {booking["date_from"]} to 
-            {booking["date_to"]} 
+            You booked a hotel from {booking["date_from"]} to
+            {booking["date_to"]}
         """,
         subtype="html",
     )

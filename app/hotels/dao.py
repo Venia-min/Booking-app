@@ -1,6 +1,6 @@
 from datetime import date
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import and_, func, select
 
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
@@ -25,7 +25,10 @@ class HotelDAO(BaseDAO):
     ):
         async with async_session_maker() as session:
             booked_rooms = (
-                select(Rooms.hotel_id, func.count(Bookings.id).label("booked_count"))
+                select(
+                    Rooms.hotel_id,
+                    func.count(Bookings.id).label("booked_count"),
+                )
                 .join(Bookings, Bookings.room_id == Rooms.id)
                 .where(
                     and_(

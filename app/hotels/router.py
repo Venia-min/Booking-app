@@ -29,7 +29,9 @@ async def get_available_hotels(
     :param date_to:
     :return:
     """
-    hotels = await HotelDAO.get_available_by_loc_and_date(location, date_from, date_to)
+    hotels = await HotelDAO.get_available_by_loc_and_date(
+        location, date_from, date_to
+    )
     # TypeAdapter().validate_python() can ensure correct operation of redis
     # hotels_json = TypeAdapter(List[SHotel]).validate_python(hotels)
     return hotels

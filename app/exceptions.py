@@ -67,14 +67,18 @@ class IncorrectTokenFormatException(UserException):
 class UserIsNotPresentException(UserException):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="error", code="ERROR"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="error",
+            code="ERROR",
         )
 
 
 class RoomCannotBeBookedException(BookingException):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_409_CONFLICT, detail="No rooms left", code="ERROR"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No rooms left",
+            code="ERROR",
         )
 
 
