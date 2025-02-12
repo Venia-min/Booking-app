@@ -272,3 +272,5 @@ cython_debug/
 alembic.ini
 /app/migrations/
 /test_data_db.sql
+/.env-prod
+
