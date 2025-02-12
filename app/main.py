@@ -1,11 +1,16 @@
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI
+from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.requests import Request
 from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
+from fastapi_versioning import VersionedFastAPI
 from redis import asyncio as aioredis
 from sqladmin import Admin
 
@@ -17,6 +22,7 @@ from app.database import engine
 from app.hotels.rooms.router import router as router_rooms
 from app.hotels.router import router as router_hotels
 from app.images.router import router as router_images
+from app.logger import logger
 from app.pages.router import router as router_pages
 from app.users.router import router as router_users
 
@@ -30,9 +36,17 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+sentry_sdk.init(
+    dsn="https://5785d3a2a2f51d15812b29e35425a55b@o4508801822097408.ingest.de.sentry.io/4508801831469136",
+    send_default_pii=True,
+    traces_sample_rate=1.0,
+    _experiments={
+        "continuous_profiling_auto_start": True,
+    },
+)
 
-app.mount("/static", StaticFiles(directory="app/static"), "static")
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(router_users)
 app.include_router(router_bookings)
@@ -60,9 +74,46 @@ app.add_middleware(
     ],
 )
 
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.monotonic()
+    response = await call_next(request)
+    process_time = time.monotonic() - start_time
+    logger.info(
+        "Request handling time", extra={"process_time": round(process_time, 4)}
+    )
+    return response
+
+
+app = VersionedFastAPI(
+    app,
+    version_format="{major}",
+    prefix_format="/v{major}",
+    middleware=[
+        Middleware(
+            CORSMiddleware,
+            allow_origins=origins,
+            allow_credentials=True,
+            allow_methods=["GET", "OPTIONS", "DELETE", "PATCH", "PUT"],
+            allow_headers=[
+                "Content-Type",
+                "Set-Cookie",
+                "Access-Control-Allow-Headers",
+                "Access-Control-Allow-Origin",
+                "Authorization",
+            ],
+        )
+    ],
+)
+
+
 admin = Admin(app, engine, authentication_backend=authentication_backend)
 
 admin.add_view(UsersAdmin)
 admin.add_view(RoomsAdmin)
 admin.add_view(HotelsAdmin)
 admin.add_view(BookingsAdmin)
+
+
+app.mount("/static", StaticFiles(directory="app/static"), "static")

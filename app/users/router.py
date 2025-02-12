@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Response
+from fastapi_versioning import version
 
 from app.exceptions import (
     IncorrectEmailorPasswordException,
@@ -30,6 +31,7 @@ async def register_user(user_data: SUserAuth):
 
 
 @router.post("/login")
+@version(1)
 async def login_user(response: Response, user_data: SUserAuth):
     user = await authenticate_user(user_data.email, user_data.password)
     if not user:
