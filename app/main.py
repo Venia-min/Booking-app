@@ -80,15 +80,15 @@ app.add_middleware(
 
 
 # Logging middleware
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    start_time = time.monotonic()
-    response = await call_next(request)
-    process_time = time.monotonic() - start_time
-    logger.info(
-        "Request handling time", extra={"process_time": round(process_time, 4)}
-    )
-    return response
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     start_time = time.monotonic()
+#     response = await call_next(request)
+#     process_time = time.monotonic() - start_time
+#     logger.info(
+#         "Request handling time", extra={"process_time": round(process_time, 4)}
+#     )
+#     return response
 
 
 # FastAPI API versioning
