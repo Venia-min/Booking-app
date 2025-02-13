@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_versioning import VersionedFastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 from redis import asyncio as aioredis
 from sqladmin import Admin
 
@@ -27,6 +28,7 @@ from app.pages.router import router as router_pages
 from app.users.router import router as router_users
 
 
+# Redis are necessary
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     redis = aioredis.from_url(
@@ -36,6 +38,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     yield
 
 
+# Sentry configuration
 sentry_sdk.init(
     dsn="https://5785d3a2a2f51d15812b29e35425a55b@o4508801822097408.ingest.de.sentry.io/4508801831469136",
     send_default_pii=True,
@@ -56,6 +59,7 @@ app.include_router(router_rooms)
 app.include_router(router_pages)
 app.include_router(router_images)
 
+# CORSM middleware
 origins = [
     "http://localhost:3000",
 ]
@@ -75,6 +79,7 @@ app.add_middleware(
 )
 
 
+# Logging middleware
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.monotonic()
@@ -86,6 +91,7 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
+# FastAPI API versioning
 app = VersionedFastAPI(
     app,
     version_format="{major}",
@@ -107,7 +113,7 @@ app = VersionedFastAPI(
     ],
 )
 
-
+# Admin panel
 admin = Admin(app, engine, authentication_backend=authentication_backend)
 
 admin.add_view(UsersAdmin)
@@ -115,5 +121,16 @@ admin.add_view(RoomsAdmin)
 admin.add_view(HotelsAdmin)
 admin.add_view(BookingsAdmin)
 
-
+# Static files
 app.mount("/static", StaticFiles(directory="app/static"), "static")
+
+# Prometheus configuration
+# metrics_app = make_asgi_app()
+# app.mount("/metrics", metrics_app)
+instrumentator = Instrumentator(
+    should_group_status_codes=False,  # Disable status grouping (200, 400, etc.)
+    should_ignore_untemplated=True,  # Ignore requests that don’t match
+    excluded_handlers=["/metrics", r"/admin.*"],  # Exclude certain endpoints
+)
+
+instrumentator.instrument(app).expose(app)

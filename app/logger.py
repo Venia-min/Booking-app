@@ -21,7 +21,9 @@ class CustomJsonFormatter(JsonFormatter):
             now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             log_record["timestamp"] = now
 
-        log_record["level"] = log_record.get("level", record.levelname).upper()
+        log_record["level"] = (
+            log_record.get("level") or record.levelname or "INFO"
+        ).upper()
 
 
 formatter = CustomJsonFormatter(
