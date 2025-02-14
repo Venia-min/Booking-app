@@ -23,46 +23,47 @@ class HotelDAO(BaseDAO):
         date_from: date,
         date_to: date,
     ):
-        async with async_session_maker() as session:
-            booked_rooms = (
-                select(
-                    Rooms.hotel_id,
-                    func.count(Bookings.id).label("booked_count"),
-                )
-                .join(Bookings, Bookings.room_id == Rooms.id)
-                .where(
-                    and_(
-                        Bookings.date_from < date_to,
-                        Bookings.date_to > date_from,
-                    )
-                )
-                .group_by(Rooms.hotel_id)
-                .cte("booked_rooms")
-            )
 
-            hotels_query = (
-                select(
-                    Hotels.__table__.columns,
+        booked_rooms = (
+            select(
+                Rooms.hotel_id,
+                func.count(Bookings.id).label("booked_count"),
+            )
+            .join(Bookings, Bookings.room_id == Rooms.id)
+            .where(
+                and_(
+                    Bookings.date_from < date_to,
+                    Bookings.date_to > date_from,
+                )
+            )
+            .group_by(Rooms.hotel_id)
+            .cte("booked_rooms")
+        )
+
+        hotels_query = (
+            select(
+                Hotels.__table__.columns,
+                (
+                    Hotels.rooms_quantity
+                    - func.coalesce(booked_rooms.c.booked_count, 0)
+                ).label("rooms_left"),
+            )
+            .outerjoin(booked_rooms, booked_rooms.c.hotel_id == Hotels.id)
+            .where(
+                and_(
+                    Hotels.location.ilike(f"%{location}%"),
                     (
                         Hotels.rooms_quantity
                         - func.coalesce(booked_rooms.c.booked_count, 0)
-                    ).label("rooms_left"),
-                )
-                .outerjoin(booked_rooms, booked_rooms.c.hotel_id == Hotels.id)
-                .where(
-                    and_(
-                        Hotels.location.ilike(f"%{location}%"),
-                        (
-                            Hotels.rooms_quantity
-                            - func.coalesce(booked_rooms.c.booked_count, 0)
-                        )
-                        > 0,
                     )
+                    > 0,
                 )
             )
+        )
 
+        async with async_session_maker() as session:
             result = await session.execute(hotels_query)
             # mappings() can ensure correct operation of redis
             hotels = result.mappings().all()
 
-            return hotels
+        return hotels

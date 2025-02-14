@@ -31,7 +31,6 @@ async def register_user(user_data: SUserAuth):
 
 
 @router.post("/login")
-@version(1)
 async def login_user(response: Response, user_data: SUserAuth):
     user = await authenticate_user(user_data.email, user_data.password)
     if not user:

@@ -28,34 +28,40 @@ from app.pages.router import router as router_pages
 from app.users.router import router as router_users
 
 
-# Redis are necessary
+# # Redis are necessary
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    print("lifespan started")
     redis = aioredis.from_url(
         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
     )
     FastAPICache.init(RedisBackend(redis), prefix="cache")
+    print("Cache init")
     yield
-
-
-# Sentry configuration
-sentry_sdk.init(
-    dsn="https://5785d3a2a2f51d15812b29e35425a55b@o4508801822097408.ingest.de.sentry.io/4508801831469136",
-    send_default_pii=True,
-    traces_sample_rate=1.0,
-    _experiments={
-        "continuous_profiling_auto_start": True,
-    },
-)
+    print("lifespan ended")
+    await redis.close()
 
 
 app = FastAPI(lifespan=lifespan)
 
+# Sentry configuration
+if settings.MODE != "TEST":
+    sentry_sdk.init(
+        dsn="https://5785d3a2a2f51d15812b29e35425a55b@o4508801822097408.ingest.de.sentry.io/4508801831469136",
+        send_default_pii=True,
+        traces_sample_rate=1.0,
+        _experiments={
+            "continuous_profiling_auto_start": True,
+        },
+    )
+
+# Routers
 app.include_router(router_users)
 app.include_router(router_bookings)
 app.include_router(router_hotels)
 app.include_router(router_rooms)
 
+# Additional routers
 app.include_router(router_pages)
 app.include_router(router_images)
 
@@ -80,38 +86,41 @@ app.add_middleware(
 
 
 # Logging middleware
-# @app.middleware("http")
-# async def add_process_time_header(request: Request, call_next):
-#     start_time = time.monotonic()
-#     response = await call_next(request)
-#     process_time = time.monotonic() - start_time
-#     logger.info(
-#         "Request handling time", extra={"process_time": round(process_time, 4)}
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    start_time = time.monotonic()
+    response = await call_next(request)
+    process_time = time.monotonic() - start_time
+    logger.info(
+        "Request handling time", extra={"process_time": round(process_time, 4)}
+    )
+    return response
+
+
+# # FastAPI API versioning
+# app = VersionedFastAPI(
+#     app,
+#     version_format="{major}",
+#     prefix_format="/v{major}",
+# )
+
+# Redis for testing
+if settings.MODE == "TEST":
+    redis = aioredis.from_url(
+        f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
+    )
+    FastAPICache.init(RedisBackend(redis), prefix="cache")
+
+# Derpicated
+# @app.on_event("startup")
+# def startup():
+#     redis = aioredis.from_url(
+#         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
+#         encoding="utf8",
+#         decode_responses=True,
 #     )
-#     return response
+#     FastAPICache.init(RedisBackend(redis), prefix="cache")
 
-
-# FastAPI API versioning
-app = VersionedFastAPI(
-    app,
-    version_format="{major}",
-    prefix_format="/v{major}",
-    middleware=[
-        Middleware(
-            CORSMiddleware,
-            allow_origins=origins,
-            allow_credentials=True,
-            allow_methods=["GET", "OPTIONS", "DELETE", "PATCH", "PUT"],
-            allow_headers=[
-                "Content-Type",
-                "Set-Cookie",
-                "Access-Control-Allow-Headers",
-                "Access-Control-Allow-Origin",
-                "Authorization",
-            ],
-        )
-    ],
-)
 
 # Admin panel
 admin = Admin(app, engine, authentication_backend=authentication_backend)
