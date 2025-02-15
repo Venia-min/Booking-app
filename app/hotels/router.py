@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.get("/{location}")
 @cache(expire=30)
-async def get_available_hotels(
+async def get_available_hotels_by_loc(
     location: str,
     date_from: date,
     date_to: date,
@@ -39,6 +39,12 @@ async def get_available_hotels(
 
 @router.get("id/{hotel_id}")
 async def get_hotel(hotel_id: int) -> SSingleHotel:
+    """
+    Return a hotel.
+    Requires authorization: no.
+    :param hotel_id:
+    :return:
+    """
     hotel = await HotelDAO.find_one_or_none(id=hotel_id)
     if not hotel:
         raise HotelNotAvailableException()

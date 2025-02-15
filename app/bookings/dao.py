@@ -72,9 +72,10 @@ class BookingDAO(BaseDAO):
                 rooms_left: int = rooms_left.scalar()
 
                 if rooms_left > 0:
-                    get_price = select(Rooms.price).filter_by(id=room_id)
-                    price = await session.execute(get_price)
-                    price: int = price.scalar()
+                    get_daily_price = select(Rooms.price).filter_by(id=room_id)
+                    daily_price = await session.execute(get_daily_price)
+                    daily_price: int = daily_price.scalar()
+                    price = (date_to - date_from) * daily_price
                     add_booking = (
                         insert(Bookings)
                         .values(
@@ -90,6 +91,7 @@ class BookingDAO(BaseDAO):
                     await session.commit()
                     return new_booking.scalar()
                 return None
+
         except (SQLAlchemyError, Exception) as e:
             if isinstance(e, SQLAlchemyError):
                 msg = "Database Exc"
@@ -104,10 +106,26 @@ class BookingDAO(BaseDAO):
             }
             logger.error(msg, extra=extra, exc_info=True)
 
-    # @classmethod
-    # async def find_all(cls):
-    #     pass
-    #
+    @classmethod
+    async def find_all_with_room_info(cls, user_id: int):
+        bookings = (
+            select(
+                Bookings.__table__.columns,
+                Rooms.image_id,
+                Rooms.name,
+                Rooms.description,
+                Rooms.services,
+            )
+            .join(Rooms, Rooms.id == Bookings.room_id)
+            .where(Bookings.user_id == user_id)
+            .order_by(Bookings.date_from.desc())
+        )
+
+        async with async_session_maker() as session:
+            bookings = await session.execute(bookings)
+
+        return bookings.mappings().all()
+
     # @classmethod
     # async def delete(cls, user_id, booking_id):
     #     pass

@@ -2,19 +2,23 @@ from fastapi import HTTPException, status
 
 
 class UserException(HTTPException):
-    def __init__(self, status_code: int, detail: str, code: str = "error"):
+    def __init__(self, status_code: int, detail: str, code: str = "USER_ERROR"):
         self.code = code
         super().__init__(status_code=status_code, detail=detail)
 
 
 class BookingException(HTTPException):
-    def __init__(self, status_code: int, detail: str, code: str = "error"):
+    def __init__(
+        self, status_code: int, detail: str, code: str = "BOOKING_ERROR"
+    ):
         self.code = code
         super().__init__(status_code=status_code, detail=detail)
 
 
 class HotelException(HTTPException):
-    def __init__(self, status_code: int, detail: str, code: str = "error"):
+    def __init__(
+        self, status_code: int, detail: str, code: str = "HOTEL_ERROR"
+    ):
         self.code = code
         super().__init__(status_code=status_code, detail=detail)
 
@@ -69,7 +73,6 @@ class UserIsNotPresentException(UserException):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="error",
-            code="ERROR",
         )
 
 
@@ -78,7 +81,6 @@ class RoomCannotBeBookedException(BookingException):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
             detail="No rooms left",
-            code="ERROR",
         )
 
 
@@ -87,5 +89,4 @@ class HotelNotAvailableException(BookingException):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
             detail="Hotel is not available",
-            code="ERROR",
         )

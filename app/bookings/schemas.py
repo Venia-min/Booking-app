@@ -1,4 +1,5 @@
 from datetime import date
+from typing import List
 
 from pydantic import BaseModel, ConfigDict
 
@@ -27,6 +28,6 @@ class SBookingInfo(BaseModel):
     image_id: int  # for room
     name: str  # for room
     description: str  # for room
-    services: str  # for room
+    services: List[str]  # for room
 
     model_config = ConfigDict(from_attributes=True)

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
 
 from app.bookings.dao import BookingDAO
-from app.bookings.schemas import SBooking
+from app.bookings.schemas import SBooking, SBookingInfo
 from app.exceptions import RoomCannotBeBookedException
 from app.tasks.tasks import send_booking_confirmation_email
 from app.users.dependencies import get_current_user
@@ -18,16 +18,16 @@ router = APIRouter(
 
 
 @router.get("")
-async def get_bookings(
+async def get_bookings_with_room_info(
     user: Users = Depends(get_current_user),
-) -> list[SBooking]:
+) -> list[SBookingInfo]:
     """
     Returns a list of all user bookings.
     Requires authorization: yes.
     :param user:
     :return:
     """
-    response = await BookingDAO.find_all(user_id=user.id)
+    response = await BookingDAO.find_all_with_room_info(user_id=user.id)
     return response
 
 
