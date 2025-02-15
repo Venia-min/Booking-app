@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.bookings.models import Bookings
 from app.dao.base import BaseDAO
 from app.database import async_session_maker
+from app.exceptions import UserIsNotOwnerException
 from app.hotels.rooms.models import Rooms
 from app.logger import logger
 
@@ -126,6 +127,19 @@ class BookingDAO(BaseDAO):
 
         return bookings.mappings().all()
 
-    # @classmethod
-    # async def delete(cls, user_id, booking_id):
-    #     pass
+    @classmethod
+    async def delete(cls, booking_id: int, user_id: int) -> bool:
+        async with async_session_maker() as session:
+            booking = select(Bookings).where(Bookings.id == booking_id)
+            result = await session.execute(booking)
+            booking = result.scalars().first()
+
+            if not booking:
+                return False
+
+            if booking.user_id != user_id:
+                raise UserIsNotOwnerException()
+
+            await session.delete(booking)
+            await session.commit()
+            return True

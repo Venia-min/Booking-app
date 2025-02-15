@@ -1,11 +1,14 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status, Response
 from pydantic import TypeAdapter
 
 from app.bookings.dao import BookingDAO
 from app.bookings.schemas import SBooking, SBookingInfo
-from app.exceptions import RoomCannotBeBookedException
+from app.exceptions import (
+    RoomCannotBeBookedException,
+    BookingNotFoundException,
+)
 from app.tasks.tasks import send_booking_confirmation_email
 from app.users.dependencies import get_current_user
 from app.users.models import Users
@@ -69,4 +72,7 @@ async def del_booking(
     :param user:
     :return:
     """
-    await BookingDAO.delete(user.id, booking_id)
+    deleted = await BookingDAO.delete(booking_id, user.id)
+    if not deleted:
+        raise BookingNotFoundException()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

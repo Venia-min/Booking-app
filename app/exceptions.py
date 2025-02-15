@@ -76,6 +76,15 @@ class UserIsNotPresentException(UserException):
         )
 
 
+class UserIsNotOwnerException(UserException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not owner",
+            code="NOT_OWNER",
+        )
+
+
 class RoomCannotBeBookedException(BookingException):
     def __init__(self):
         super().__init__(
@@ -84,7 +93,16 @@ class RoomCannotBeBookedException(BookingException):
         )
 
 
-class HotelNotAvailableException(BookingException):
+class BookingNotFoundException(BookingException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found",
+            code="BOOKING_NOT_FOUND",
+        )
+
+
+class HotelNotAvailableException(HotelException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,

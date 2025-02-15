@@ -18,6 +18,7 @@ class SBooking(BaseModel):
 
 
 class SBookingInfo(BaseModel):
+    id: int
     room_id: int
     user_id: int
     date_from: date
