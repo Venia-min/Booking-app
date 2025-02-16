@@ -1,7 +1,11 @@
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
+
+from app.bookings.models import Bookings
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "room_id, date_from, date_to, booked_rooms, " "status_code",
     [
@@ -24,6 +28,7 @@ async def test_add_and_get_booking(
     status_code,
     booked_rooms,
     authenticated_ac: AsyncClient,
+    session,
 ):
     response = await authenticated_ac.post(
         "/bookings",

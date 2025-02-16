@@ -76,7 +76,7 @@ class BookingDAO(BaseDAO):
                     get_daily_price = select(Rooms.price).filter_by(id=room_id)
                     daily_price = await session.execute(get_daily_price)
                     daily_price: int = daily_price.scalar()
-                    price = (date_to - date_from) * daily_price
+                    price = (date_to - date_from).days * daily_price
                     add_booking = (
                         insert(Bookings)
                         .values(

@@ -15,7 +15,7 @@ from app.main import app as fastapi_app
 from app.users.models import Users
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 async def prepare_database():
     assert settings.MODE == "TEST"
 
@@ -52,16 +52,16 @@ async def prepare_database():
         await session.commit()
 
 
-@pytest.mark.asyncio(loop_scope="session")
-def event_loop(request):
-    """
-    Create an instance of the default event loop for each test case.
-    :param request:
-    :return:
-    """
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
+# @pytest.mark.asyncio(loop_scope="session")
+# def event_loop():
+#     """
+#     Create an instance of the default event loop for each test case.
+#     :param request:
+#     :return:
+#     """
+#     loop = asyncio.new_event_loop()
+#     yield loop
+#     loop.close()
 
 
 @pytest.fixture(scope="function")
@@ -95,3 +95,4 @@ async def session():
     async with async_session_maker() as session:
         yield session
         await session.rollback()
+        await session.close()

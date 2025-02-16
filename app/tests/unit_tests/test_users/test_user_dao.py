@@ -3,6 +3,7 @@ import pytest
 from app.users.dao import UserDAO
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "id, email",
     [

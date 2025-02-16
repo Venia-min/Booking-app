@@ -53,7 +53,7 @@ async def add_booking(
     booking = await BookingDAO.add(user.id, room_id, date_from, date_to)
     if not booking:
         raise RoomCannotBeBookedException()
-    booking_dict = TypeAdapter(SBooking).validate_python(booking).dict()
+    booking_dict = TypeAdapter(SBooking).validate_python(booking).model_dump()
     try:
         send_booking_confirmation_email.delay(booking_dict, user.email)
     finally:
